@@ -32,12 +32,12 @@ local TeamSelf = player.Team and player.Team.Name or "Pirates"
 local Window = MrLib:CreateWindow({
     Title    = "Abyss Hub",
     Subtitle = "by MrXT, Lxcas and Renan",
-    Icon     = "rbxassetid://",
+    Icon     = "rbxassetid://98534659761629",
     Size     = UDim2.new(0, 530, 0, 400),
     Theme    = "Yellow",
      FloatingButton = {
         Enabled  = true,
-        Icon     = "rbxassetid://96866982801235",
+        Icon     = "rbxassetid://98534659761629",
         Size     = UDim2.new(0, 60, 0, 60),
         Position = UDim2.new(0, 20, 0, 100),
         Shape    = "Square"
@@ -50,6 +50,7 @@ local Tabs = {
     Main      = Window:CreateTab({Name="Main",      Title="Farming",        Subtitle="Level/Bone/Kata/Aura/Tyrant", Icon="rbxassetid://"}),
     Quests    = Window:CreateTab({Name="Quests",    Title="Stack Farming",  Subtitle="Elite / Sea Travel",          Icon="rbxassetid://"}),
     Stats     = Window:CreateTab({Name="Stats",     Title="Stats",          Subtitle="Auto upgrade",                Icon="rbxassetid://"}),
+    Roll      = Window:CreateTab({Name="Roll",      Title="Roll",           Subtitle="Auto Roll Fruit / Bones",     Icon="rbxassetid://"}),
     FruitRaid = Window:CreateTab({Name="FruitRaid", Title="Dungeon",        Subtitle="Dungeon / Raid",              Icon="rbxassetid://"}),
     Travel    = Window:CreateTab({Name="Travel",    Title="Travel",         Subtitle="World / Island / NPC",        Icon="rbxassetid://"}),
     Shop      = Window:CreateTab({Name="Shop",      Title="Shop",           Subtitle="Fighting Styles",             Icon="rbxassetid://"}),
@@ -633,7 +634,7 @@ local DualQuestPairings = {
 }
 
 --// ================= QUEST DATA =================
--- (QuestNeta function — copiada integralmente do Topi_Hub)
+-- (QuestNeta function — copied from Topi_Hub)
 local function QuestNeta()
     local I = player.Data.Level.Value
     local Mon, Qdata, Qname, NameMon, PosM, PosQ
@@ -671,7 +672,7 @@ local function QuestNeta()
         elseif I <= 549 then Mon="Royal Squad";       Qdata=1; Qname="SkyExp2Quest";   NameMon="Royal Squad";       PosQ=CFrame.new(-7906.81592,5634.6626,-1411.99194,0,0,-1,0,1,0,1,0,0); PosM=CFrame.new(-7624.2524414062,5658.1333007812,-1467.3542480469)
         elseif I <= 624 then Mon="Royal Soldier";     Qdata=2; Qname="SkyExp2Quest";   NameMon="Royal Soldier";     PosQ=CFrame.new(-7906.81592,5634.6626,-1411.99194,0,0,-1,0,1,0,1,0,0); PosM=CFrame.new(-7836.7534179688,5645.6640625,-1790.6236572266)
         elseif I <= 649 then Mon="Galley Pirate";     Qdata=1; Qname="FountainQuest";  NameMon="Galley Pirate";     PosQ=CFrame.new(5259.81982,37.3500175,4050.0293,.087131381,0,.996196866,0,1,0,-0.996196866,0,.087131381); PosM=CFrame.new(5551.0219726562,78.901351928711,3930.4128417969)
-        elseif I <= 699 then Mon="Galley Captain";    Qdata=2; Qname="FountainQuest";  NameMon="Galley Captain";    PosQ=CFrame.new(5259.81982,37.3500175,4050.0293,.087131381,0,.996196866,0,1,0,-0.996196866,0,.087131381); PosM=CFrame.new(5441.9516601562,42.502059936523,4950.09375)
+        else                Mon="Galley Captain";    Qdata=2; Qname="FountainQuest";  NameMon="Galley Captain";    PosQ=CFrame.new(5259.81982,37.3500175,4050.0293,.087131381,0,.996196866,0,1,0,-0.996196866,0,.087131381); PosM=CFrame.new(5441.9516601562,42.502059936523,4950.09375)
         end
     elseif World2 then
         if     I <= 724  then Mon="Raider";           Qdata=1; Qname="Area1Quest";     NameMon="Raider";            PosQ=CFrame.new(-429.543518,71.7699966,1836.18188,-0.22495985,0,-0.974368095,0,1,0,.974368095,0,-0.22495985); PosM=CFrame.new(-728.32672119141,52.779319763184,2345.7705078125)
@@ -695,7 +696,7 @@ local function QuestNeta()
         elseif I <= 1374 then Mon="Arctic Warrior";   Qdata=1; Qname="FrostQuest";     NameMon="Arctic Warrior";    PosQ=CFrame.new(5667.6582,26.7997818,-6486.08984,-0.933587909,0,-0.358349502,0,1,0,.358349502,0,-0.933587909);   PosM=CFrame.new(5966.24609375,62.970020294189,-6179.3828125)
         elseif I <= 1424 then Mon="Snow Lurker";      Qdata=2; Qname="FrostQuest";     NameMon="Snow Lurker";       PosQ=CFrame.new(5667.6582,26.7997818,-6486.08984,-0.933587909,0,-0.358349502,0,1,0,.358349502,0,-0.933587909);   PosM=CFrame.new(5407.0737304688,69.194374084473,-6880.8803710938)
         elseif I <= 1449 then Mon="Sea Soldier";      Qdata=1; Qname="ForgottenQuest"; NameMon="Sea Soldier";       PosQ=CFrame.new(-3054.44458,235.544281,-10142.8193,.990270376,0,-0.13915664,0,1,0,.13915664,0,.990270376);       PosM=CFrame.new(-3028.2236328125,64.674514770508,-9775.4267578125)
-        elseif I <= 1499 then Mon="Water Fighter";    Qdata=2; Qname="ForgottenQuest"; NameMon="Water Fighter";     PosQ=CFrame.new(-3054.44458,235.544281,-10142.8193,.990270376,0,-0.13915664,0,1,0,.13915664,0,.990270376);       PosM=CFrame.new(-3352.9013671875,285.01556396484,-10534.841796875)
+        else                Mon="Water Fighter";    Qdata=2; Qname="ForgottenQuest"; NameMon="Water Fighter";     PosQ=CFrame.new(-3054.44458,235.544281,-10142.8193,.990270376,0,-0.13915664,0,1,0,.13915664,0,.990270376);       PosM=CFrame.new(-3352.9013671875,285.01556396484,-10534.841796875)
         end
     elseif World3 then
         if     I <= 1524 then Mon="Pirate Millionaire";   Qdata=1; Qname="PiratePortQuest";  NameMon="Pirate Millionaire";   PosQ=CFrame.new(-290.07,42.90,5581.59); PosM=CFrame.new(-246.00,47.31,5584.10)
@@ -1238,7 +1239,7 @@ end
 local Net            = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
 local RegisterAttack = Net:WaitForChild("RE/RegisterAttack")
 local RegisterHit    = Net:WaitForChild("RE/RegisterHit")
-local FastAttackConfig = {RANGE=90, ATTACKS_PER_FRAME=10, HITS_PER_FRAME=10, FRUIT_SPAM=10}
+local FastAttackConfig = {RANGE=300, ATTACKS_PER_FRAME=10, HITS_PER_FRAME=10, FRUIT_SPAM=10}
 local FruitArmed = false
 local LastTool   = nil
 
@@ -1528,6 +1529,116 @@ spawn(function()
         end)
     end
 end)
+
+-- ESP
+getgenv().ESPPlayers = false
+getgenv().ESPFruits  = false
+
+local espPlayerBills = {}
+local espFruitBills  = {}
+
+local function getESPDistance(targetPosition)
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        return math.floor((targetPosition - char.HumanoidRootPart.Position).Magnitude)
+    end
+    return 0
+end
+
+local function clearESPPlayers()
+    for _, bb in pairs(espPlayerBills) do pcall(function() bb:Destroy() end) end
+    espPlayerBills = {}
+end
+
+local function clearESPFruits()
+    for _, bb in pairs(espFruitBills) do pcall(function() bb:Destroy() end) end
+    espFruitBills = {}
+end
+
+-- Update players distance every 0.5s (lightweight)
+spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            if not getgenv().ESPPlayers then clearESPPlayers() return end
+            -- Remove bills from players who left
+            for p, bb in pairs(espPlayerBills) do
+                if not (p.Character and p.Character:FindFirstChild("HumanoidRootPart")) then
+                    pcall(function() bb:Destroy() end)
+                    espPlayerBills[p] = nil
+                end
+            end
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= lp and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    local dist = getESPDistance(hrp.Position)
+                    if not espPlayerBills[p] or not espPlayerBills[p].Parent then
+                        local bb = Instance.new("BillboardGui")
+                        bb.Name = "TopiESPPlayer"
+                        bb.Size = UDim2.new(0, 200, 0, 50)
+                        bb.StudsOffset = Vector3.new(0, 2, 0)
+                        bb.Adornee = hrp
+                        bb.Parent = hrp
+                        local lbl = Instance.new("TextLabel")
+                        lbl.Size = UDim2.new(1, 0, 1, 0)
+                        lbl.BackgroundTransparency = 1
+                        lbl.TextColor3 = Color3.fromRGB(255, 0, 0)
+                        lbl.TextSize = 14
+                        lbl.Font = Enum.Font.SourceSansBold
+                        lbl.Parent = bb
+                        espPlayerBills[p] = bb
+                    end
+                    local lbl = espPlayerBills[p]:FindFirstChildOfClass("TextLabel")
+                    if lbl then lbl.Text = p.Name .. " [" .. dist .. "m]" end
+                end
+            end
+        end)
+    end
+end)
+
+-- Update fruits every 2s (fruits don't move)
+spawn(function()
+    while task.wait(2) do
+        pcall(function()
+            if not getgenv().ESPFruits then clearESPFruits() return end
+            clearESPFruits()
+            for _, item in pairs(workspace:GetChildren()) do
+                if string.find(item.Name, "Fruit") then
+                    local rootPart = item:FindFirstChild("Handle") or item:FindFirstChild("PrimaryPart") or item:FindFirstChild("Fruit")
+                    if rootPart then
+                        local dist = getESPDistance(rootPart.Position)
+                        local cleanName = string.gsub(item.Name, "Fruit", "")
+                        cleanName = string.gsub(cleanName, "[%[%]]", "")
+                        local bb = Instance.new("BillboardGui")
+                        bb.Name = "TopiESPFruit"
+                        bb.Size = UDim2.new(0, 200, 0, 50)
+                        bb.StudsOffset = Vector3.new(0, 2, 0)
+                        bb.Adornee = rootPart
+                        bb.Parent = rootPart
+                        local lbl = Instance.new("TextLabel")
+                        lbl.Size = UDim2.new(1, 0, 1, 0)
+                        lbl.BackgroundTransparency = 1
+                        lbl.Text = cleanName .. " [" .. dist .. "m]"
+                        lbl.TextColor3 = Color3.fromRGB(255, 255, 0)
+                        lbl.TextSize = 18
+                        lbl.Font = Enum.Font.SourceSansBold
+                        lbl.Parent = bb
+                        table.insert(espFruitBills, bb)
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+Tabs.Settings:AddToggle({
+    Name="ESP Players", Default=false,
+    Callback=function(v) getgenv().ESPPlayers=v end
+})
+
+Tabs.Settings:AddToggle({
+    Name="ESP Fruits", Default=false,
+    Callback=function(v) getgenv().ESPFruits=v end
+})
 
 --// ================= GUI: MAIN (FARMING) =================
 Tabs.Main:AddSection("Level Farm")
@@ -2182,6 +2293,71 @@ for _, s in ipairs(shopStyles) do
         })
     end
 end
+
+--// ================= GUI: ROLL =================
+Tabs.Roll:AddSection("Auto Roll")
+
+-- Shared teleport helper
+local function rollTeleportToNPC(npcName, tweenSpeed)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    local npc = workspace:FindFirstChild(npcName, true)
+        or (workspace:FindFirstChild("NPCs") and workspace.NPCs:FindFirstChild(npcName, true))
+    if npc and npc:FindFirstChild("HumanoidRootPart") then
+        local targetPos = npc.HumanoidRootPart.CFrame
+        local info = TweenInfo.new(
+            (rootPart.Position - targetPos.Position).Magnitude / tweenSpeed,
+            Enum.EasingStyle.Linear
+        )
+        local tween = TweenService:Create(rootPart, info, {CFrame = targetPos * CFrame.new(0, 0, 3)})
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end
+
+-- Auto Roll Fruit
+getgenv().AutoRollFruit = false
+Tabs.Roll:AddToggle({
+    Name = "Auto Roll Fruit",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoRollFruit = v
+    end
+})
+spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            if getgenv().AutoRollFruit then
+                rollTeleportToNPC("Blox Fruit Gacha", 50)
+                task.wait(1)
+                local gachaRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+                gachaRemote:InvokeServer("Cousin", "Buy")
+            end
+        end)
+    end
+end)
+
+-- Auto Roll Bones
+getgenv().AutoRollBones = false
+Tabs.Roll:AddToggle({
+    Name = "Auto Roll Bones",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoRollBones = v
+    end
+})
+spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            if getgenv().AutoRollBones then
+                rollTeleportToNPC("Death King", 50)
+                task.wait(1)
+                local mainRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+                mainRemote:InvokeServer("Bones", "Buy", 1)
+            end
+        end)
+    end
+end)
 
 --// ================= NOTIFY LOADED =================
 Window:Notify({
