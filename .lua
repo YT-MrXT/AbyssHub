@@ -1,6 +1,5 @@
 --------------------------------------------------------------------------------
---// TopiHub Combined — Lógica do Topi_Hub + UI do MrLib (Source)
---// Combinado automaticamente
+
 --------------------------------------------------------------------------------
 
 --// ================= LOAD LIBRARIES =================
@@ -31,8 +30,8 @@ local TeamSelf = player.Team and player.Team.Name or "Pirates"
 
 --// ================= WINDOW & TABS (MrLib) =================
 local Window = MrLib:CreateWindow({
-    Title    = "Topi Hub",
-    Subtitle = "by Topi & AI",
+    Title    = "Abyss Hub",
+    Subtitle = "by MrXT, Lxcas and Renan",
     Icon     = "rbxassetid://",
     Size     = UDim2.new(0, 530, 0, 400),
     Theme    = "Yellow",
@@ -2186,7 +2185,7 @@ end
 
 --// ================= NOTIFY LOADED =================
 Window:Notify({
-    Title   = "Topi Hub",
+    Title   = "Abyss Hub",
     Text    = "Script loaded! All features ready.",
     Duration = 5
 })
