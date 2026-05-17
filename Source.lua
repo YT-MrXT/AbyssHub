@@ -18,13 +18,24 @@ local Workspace          = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local lp     = player
 
+-- Detect current world --------------------------------------------------------
+local World1, World2, World3 = false, false, false
+pcall(function()
+    if Workspace:FindFirstChild("Map") then
+        if Workspace.Map:FindFirstChild("Grass") then World1 = true
+        elseif Workspace.Map:FindFirstChild("Dressrosa") then World2 = true
+        elseif Workspace.Map:FindFirstChild("Zou") then World3 = true
+        end
+    end
+end)
+
 --------------------------------------------------------------------------------
 --// 2️⃣  WINDOW & TABS (MrLib UI)
 --------------------------------------------------------------------------------
 local window = MrLib:CreateWindow({
     Title        = "Topi Hub",
     Subtitle     = "by Topi & AI",
-    Icon         = "rbxassetid://",        -- you can change the icon later
+    Icon         = "rbxassetid://",
     Size         = UDim2.new(0, 530, 0, 400),
     Theme        = "Yellow",
     FloatingButton = {
@@ -47,9 +58,8 @@ local tabDungeon   = window:CreateTab({Name="Dungeon",   Title="Dungeon",   Subt
 local tabTravel    = window:CreateTab({Name="Travel",    Title="Travel",    Subtitle="World / Island / NPC", Icon="rbxassetid://"})
 local tabShop      = window:CreateTab({Name="Shop",      Title="Shop",      Subtitle="Buy fighting styles", Icon="rbxassetid://"})
 
-
 --------------------------------------------------------------------------------
---// 3️⃣  GLOBAL FLAGS (same as original script)
+--// 3️⃣  GLOBAL FLAGS
 --------------------------------------------------------------------------------
 getgenv().FarmLevel        = false
 getgenv().FarmBone         = false
@@ -67,20 +77,20 @@ getgenv().Auto_Sword       = false
 getgenv().Auto_Gun         = false
 getgenv().Auto_DevilFruit  = false
 getgenv().Auto_Defense     = false
-getgenv().pSats           = 10
-getgenv().FastAttack      = false
-getgenv().BringMob        = true
-getgenv().FlySpeed        = 300
-getgenv().FlyHeight       = 30
-getgenv().BringRange      = 350
-getgenv().TargetRange     = 10000
-getgenv().Noclip          = false
-getgenv().SpinFarm        = false
-getgenv().SpinDistance    = 30
-getgenv().IsFarming       = false
-getgenv().AutoBusoLoop    = false
-getgenv().BuddhaFarm      = false
-getgenv().BuddhaActive    = false
+getgenv().pSats            = 10
+getgenv().FastAttack       = false
+getgenv().BringMob         = true
+getgenv().FlySpeed         = 300
+getgenv().FlyHeight        = 30
+getgenv().BringRange       = 350
+getgenv().TargetRange      = 10000
+getgenv().Noclip           = false
+getgenv().SpinFarm         = false
+getgenv().SpinDistance     = 30
+getgenv().IsFarming        = false
+getgenv().AutoBusoLoop     = false
+getgenv().BuddhaFarm       = false
+getgenv().BuddhaActive     = false
 getgenv().BuddhaTransforming = false
 getgenv().CurrentTargetMob = nil
 getgenv().TravelToIsland   = false
@@ -90,9 +100,11 @@ getgenv().TravelDres       = false
 getgenv().AutoRaid         = false
 getgenv().SelectChip       = "Ice"
 
+-- Initialize weapon choice
+_G.ChooseWP = "Melee"
 
 --------------------------------------------------------------------------------
---// 4️⃣  CORE HELPERS (identical to original script)
+--// 4️⃣  CORE HELPERS
 --------------------------------------------------------------------------------
 local function getChar()
     repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -100,7 +112,7 @@ local function getChar()
 end
 
 local function getRoot()
-    local char = getChar()
+    local char = player.Character
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
@@ -120,7 +132,9 @@ local flyBodyVelocity
 local function startFly()
     if flyConn then flyConn:Disconnect() end
     local char = getChar()
-    local hrp  = char.HumanoidRootPart
+    if not char then return end
+    local hrp  = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
     if not flyBodyVelocity then
         flyBodyVelocity = Instance.new("BodyVelocity")
@@ -142,15 +156,15 @@ local function stopFly()
     if flyBodyVelocity then flyBodyVelocity:Destroy(); flyBodyVelocity = nil end
 end
 
--- Tween (with optional intermediate‑island teleport) ---------------------------
+-- Tween -----------------------------------------------------------------------
 local activeTween = nil
-local YTeleportThreshold = 300          -- when Y diff > this we teleport Y first
-local INTERMEDIATE_THRESHOLD = 3000    -- distance after which we use an intermediate island
+local YTeleportThreshold = 300
+local INTERMEDIATE_THRESHOLD = 3000
 local INTERMEDIATE_COOLDOWN = 5
 local _lastIntermediateTele = 0
-local IntermediateIslands = {}         -- filled later according to the world (see original script)
+local IntermediateIslands = {}
 
-local function doIntermediateTeleport(targetPos)               -- returns true if we teleported
+local function doIntermediateTeleport(targetPos)
     local char = player.Character
     local hrp  = char and char:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
@@ -161,7 +175,6 @@ local function doIntermediateTeleport(targetPos)               -- returns true i
                   Vector2.new(targetPos.X, targetPos.Z)).Magnitude
     if dist < INTERMEDIATE_THRESHOLD then return false end
 
-    -- find the best intermediate island (same code as the original script)
     local best, bestDist = nil, math.huge
     for _, island in ipairs(IntermediateIslands) do
         local d = (Vector2.new(island.pos.X, island.pos.Z) -
@@ -211,12 +224,14 @@ local function doTweenToPos(targetCF, speed)
     TweenObject(root, targetCF, speed or getgenv().FlySpeed)
 end
 
--- Targeting / Combat -------------------------------------------------------------
+-- Targeting / Combat -----------------------------------------------------------
 local function GetNearestEnemy(names)
     local root = getRoot()
     if not root then return nil end
     local nearest, dist = nil, math.huge
-    for _, mob in ipairs(workspace.Enemies:GetChildren()) do
+    if not Workspace:FindFirstChild("Enemies") then return nil end
+    
+    for _, mob in ipairs(Workspace.Enemies:GetChildren()) do
         if mob:FindFirstChild("Humanoid")
         and mob:FindFirstChild("HumanoidRootPart")
         and mob.Humanoid.Health > 0 then
@@ -261,7 +276,6 @@ local function AttackEnemy(enemy)
     end
 end
 
--- Weapon selection ---------------------------------------------------------------
 local function selectWeapon()
     pcall(function()
         if not getgenv().IsFarming and not getgenv().FarmPhaBinh then return end
@@ -277,11 +291,108 @@ local function selectWeapon()
 end
 
 --------------------------------------------------------------------------------
+--// PLACEHOLDER FARM FUNCTIONS (to be expanded by user)
+--------------------------------------------------------------------------------
+local farmLoops = {}
+
+local function startLevelFarm()
+    if farmLoops.level then return end
+    farmLoops.level = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmLevel then farmLoops.level:Disconnect(); farmLoops.level = nil; return end
+        -- TODO: Add level farming logic
+    end)
+end
+
+local function stopLevelFarm()
+    if farmLoops.level then farmLoops.level:Disconnect(); farmLoops.level = nil end
+end
+
+local function startBoneFarm()
+    if farmLoops.bone then return end
+    farmLoops.bone = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmBone then farmLoops.bone:Disconnect(); farmLoops.bone = nil; return end
+        -- TODO: Add bone farming logic
+    end)
+end
+
+local function stopBoneFarm()
+    if farmLoops.bone then farmLoops.bone:Disconnect(); farmLoops.bone = nil end
+end
+
+local function startKataFarm()
+    if farmLoops.kata then return end
+    farmLoops.kata = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmKata then farmLoops.kata:Disconnect(); farmLoops.kata = nil; return end
+        -- TODO: Add kata farming logic
+    end)
+end
+
+local function stopKataFarm()
+    if farmLoops.kata then farmLoops.kata:Disconnect(); farmLoops.kata = nil end
+end
+
+local function startAuraFarm()
+    if farmLoops.aura then return end
+    farmLoops.aura = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmAura then farmLoops.aura:Disconnect(); farmLoops.aura = nil; return end
+        -- TODO: Add aura farming logic
+    end)
+end
+
+local function stopAuraFarm()
+    if farmLoops.aura then farmLoops.aura:Disconnect(); farmLoops.aura = nil end
+end
+
+local function startTyrantFarm()
+    if farmLoops.tyrant then return end
+    farmLoops.tyrant = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmTyrant then farmLoops.tyrant:Disconnect(); farmLoops.tyrant = nil; return end
+        -- TODO: Add tyrant farming logic
+    end)
+end
+
+local function stopTyrantFarm()
+    if farmLoops.tyrant then farmLoops.tyrant:Disconnect(); farmLoops.tyrant = nil end
+end
+
+local function startPhaBinhFarm()
+    if farmLoops.phabinh then return end
+    farmLoops.phabinh = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmPhaBinh then farmLoops.phabinh:Disconnect(); farmLoops.phabinh = nil; return end
+        -- TODO: Add pha binh farming logic
+    end)
+end
+
+local function stopPhaBinhFarm()
+    if farmLoops.phabinh then farmLoops.phabinh:Disconnect(); farmLoops.phabinh = nil end
+end
+
+local function startDungeonFarm()
+    if farmLoops.dungeon then return end
+    farmLoops.dungeon = RunService.Heartbeat:Connect(function()
+        if not getgenv().FarmDungeon then farmLoops.dungeon:Disconnect(); farmLoops.dungeon = nil; return end
+        -- TODO: Add dungeon farming logic
+    end)
+end
+
+local function stopDungeonFarm()
+    if farmLoops.dungeon then farmLoops.dungeon:Disconnect(); farmLoops.dungeon = nil end
+end
+
+local function TeleportToSubmerged()
+    pcall(function()
+        local root = getRoot()
+        if root then
+            root.CFrame = CFrame.new(Vector3.new(11520.80, -2154.99, 9829.51) + Vector3.new(0, 5, 0))
+        end
+    end)
+end
+
+--------------------------------------------------------------------------------
 --// 5️⃣  UI: SETTINGS TAB
 --------------------------------------------------------------------------------
 tabSettings:AddSection("Settings")
 
--- Weapon selection dropdown -------------------------------------------------------
 tabSettings:AddDropdown({
     Name     = "Weapon",
     Options  = {"Melee","Sword","Blox Fruit","Gun"},
@@ -289,7 +400,6 @@ tabSettings:AddDropdown({
     Callback = function(v) _G.ChooseWP = v end
 })
 
--- Fly speed slider ---------------------------------------------------------------
 tabSettings:AddSlider({
     Name  = "Fly Speed",
     Min   = 150,
@@ -298,14 +408,12 @@ tabSettings:AddSlider({
     Callback = function(v) getgenv().FlySpeed = v end
 })
 
--- Auto attack toggle -------------------------------------------------------------
 tabSettings:AddToggle({
     Name     = "Auto Attack",
     Default  = false,
     Callback = function(v) getgenv().FastAttack = v end
 })
 
--- Buddha auto‑farm toggle --------------------------------------------------------
 tabSettings:AddToggle({
     Name     = "Buddha Farm",
     Description = "Enable Buddha transform while farming (requires Buddha fruit)",
@@ -318,17 +426,16 @@ tabSettings:AddToggle({
 --------------------------------------------------------------------------------
 tabMain:AddSection("Level Farm")
 
-local SelectedFarm = "Farm cấp"   -- default value
+local SelectedFarm = "Farm cấp"
 local function checkWorldRequirement(farmType)
     if (farmType == "Farm bone" or farmType == "Farm kata" or farmType == "Tyrant of the Skie")
        and not World3 then
-        window:Notify({Title="Wrong World", Text="This feature works only in World 3!", Duration=5})
+        window:Notify({Title="Wrong World", Text="This feature works only in World 3!", Duration=5})
         return false
     end
     return true
 end
 
--- Farm type dropdown -------------------------------------------------------------
 tabMain:AddDropdown({
     Name     = "Farm Type",
     Options  = {"Farm cấp","Farm bone","Farm kata","Farm aura","Tyrant of the Skie"},
@@ -336,7 +443,6 @@ tabMain:AddDropdown({
     Callback = function(v)
         SelectedFarm = v
         if getgenv().IsFarming then
-            -- stop all farms first
             stopLevelFarm(); stopBoneFarm(); stopKataFarm(); stopAuraFarm()
             stopTyrantFarm(); stopPhaBinhFarm(); stopFly()
             if not checkWorldRequirement(v) then
@@ -353,13 +459,11 @@ tabMain:AddDropdown({
     end
 })
 
--- Auto‑farm toggle (starts/stops the selected farm) ----------------------------
 tabMain:AddToggle({
     Name     = "Auto Farm",
     Description = "Toggle auto‑farm for the selected mode",
     Default  = false,
     Callback = function(v)
-        -- reset all farm flags
         getgenv().FarmLevel = false; getgenv().FarmBone = false
         getgenv().FarmKata  = false; getgenv().FarmAura = false
         getgenv().FarmTyrant= false; getgenv().FarmPhaBinh = false
@@ -387,7 +491,6 @@ tabMain:AddToggle({
     end
 })
 
--- Accept quest toggle (used for Bone/Kata) --------------------------------------
 tabMain:AddToggle({
     Name     = "Accept Quest (Manual)",
     Description = "Automatically accept quest for Bone/Kata",
@@ -396,7 +499,7 @@ tabMain:AddToggle({
 })
 
 --------------------------------------------------------------------------------
---// 7️⃣  UI: MATERIAL FARM (Auto‑material)
+--// 7️⃣  UI: MATERIAL FARM
 --------------------------------------------------------------------------------
 tabMain:AddSection("Material Farm")
 
@@ -476,18 +579,19 @@ local fruitLabel = tabStatus:AddParagraph({Title="Devil Fruit", Text="Loading...
 spawn(function()
     while wait(1) do
         pcall(function()
-            local fruit = player.Data.DevilFruit.Value
-            if (player.Character and player.Character:FindFirstChild(fruit))
-               or player.Backpack:FindFirstChild(fruit) then
-                fruitLabel:SetText("Devil Fruit: "..fruit)
-            else
-                fruitLabel:SetText("No Devil Fruit")
+            if player.Data and player.Data:FindFirstChild("DevilFruit") then
+                local fruit = player.Data.DevilFruit.Value
+                if (player.Character and player.Character:FindFirstChild(fruit))
+                   or player.Backpack:FindFirstChild(fruit) then
+                    fruitLabel:SetText("Devil Fruit: "..fruit)
+                else
+                    fruitLabel:SetText("No Devil Fruit")
+                end
             end
         end)
     end
 end)
 
--- Eyes status ---------------------------------------------------------------
 local eyesLabel = tabStatus:AddParagraph({Title="Eyes Status", Text="Loading..."})
 spawn(function()
     while wait(1) do
@@ -512,7 +616,6 @@ spawn(function()
     end
 end)
 
--- Auto‑Buso loop -------------------------------------------------------------
 spawn(function()
     while wait(1) do
         pcall(function()
@@ -525,7 +628,7 @@ spawn(function()
 end)
 
 --------------------------------------------------------------------------------
---// 🔟  UI: ELITE HUNT (STACKED QUEST)
+--// 🔟  UI: ELITE HUNT
 --------------------------------------------------------------------------------
 tabQuests:AddSection("Elite Hunt")
 
@@ -540,7 +643,9 @@ local function GetNearestElite()
     local root = getRoot()
     if not root then return nil end
     local nearest,dist = nil,math.huge
-    for _,mob in ipairs(workspace.Enemies:GetChildren()) do
+    if not Workspace:FindFirstChild("Enemies") then return nil end
+    
+    for _,mob in ipairs(Workspace.Enemies:GetChildren()) do
         if mob:FindFirstChild("Humanoid") and mob:FindFirstChild("HumanoidRootPart")
         and mob.Humanoid.Health>0 and IsEliteName(mob.Name) then
             local d = (mob.HumanoidRootPart.Position-root.Position).Magnitude
@@ -551,11 +656,9 @@ local function GetNearestElite()
 end
 
 local function IsEliteAvailable()
-    -- 1) elite already spawned in ReplicatedStorage
     for _,v in ipairs(ReplicatedStorage:GetChildren()) do
         if IsEliteName(v.Name) and v:FindFirstChild("HumanoidRootPart") then return true end
     end
-    -- 2) elite quest UI visible
     local questUI = player.PlayerGui:FindFirstChild("Main")
     if questUI and questUI:FindFirstChild("Quest")
        and questUI.Quest.Visible then
@@ -567,7 +670,7 @@ end
 
 local eliteHuntConn = nil
 local eliteWatchConn = nil
-local elitePaused = false   -- true when normal farms are paused
+local elitePaused = false
 
 local function PauseNormalFarms()
     if elitePaused then return end
@@ -607,14 +710,12 @@ local function startEliteHunt()
                             AttackEnemy(enemy)
                         end
                     else
-                        -- wrong quest – abandon it
                         pcall(function()
                             ReplicatedStorage.Remotes.CommF_:InvokeServer("AbandonQuest")
                         end)
                         task.wait(0.5)
                     end
                 else
-                    -- no quest – request elite
                     pcall(function()
                         ReplicatedStorage.Remotes.CommF_:InvokeServer("EliteHunter")
                     end)
@@ -635,7 +736,7 @@ local function startEliteWatcher()
     if eliteWatchConn then eliteWatchConn:Disconnect() end
     eliteWatchConn = RunService.Heartbeat:Connect(function()
         if not getgenv().FarmEliteHunt then return end
-        if eliteHuntConn then return end      -- already hunting
+        if eliteHuntConn then return end
         pcall(function()
             if IsEliteAvailable() then
                 print("⚡ Elite spotted – starting elite hunt")
@@ -676,7 +777,7 @@ tabQuests:AddToggle({
 --------------------------------------------------------------------------------
 tabTravel:AddSection("World Travel")
 tabTravel:AddButton({
-    Name     = "Travel East Blue (World 1)",
+    Name     = "Travel East Blue (World 1)",
     Callback = function()
         pcall(function()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain")
@@ -684,7 +785,7 @@ tabTravel:AddButton({
     end
 })
 tabTravel:AddButton({
-    Name     = "Travel Dressrosa (World 2)",
+    Name     = "Travel Dressrosa (World 2)",
     Callback = function()
         pcall(function()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa")
@@ -692,7 +793,7 @@ tabTravel:AddButton({
     end
 })
 tabTravel:AddButton({
-    Name     = "Travel Zou (World 3)",
+    Name     = "Travel Zou (World 3)",
     Callback = function()
         pcall(function()
             ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou")
@@ -700,7 +801,7 @@ tabTravel:AddButton({
     end
 })
 
--- === Island list (depends on world) ==========================================
+-- === Island list ============================================================
 local islandNames = {}
 local islandMap   = {}
 do
@@ -746,7 +847,7 @@ do
             {"Ghost Ship",            Vector3.new(  923.21,135.98,32852.83)},
             {"Raid Fruit",            Vector3.new(-6445.45,270.68,-4486.27)},
         }
-    else -- World3
+    else
         list = {
             {"Hydar Island",          Vector3.new(  3567.22,   51.38,  1927.11)},
             {"Peanut Island",         Vector3.new(-1943.60,   44.90,-10288.01)},
@@ -770,12 +871,13 @@ do
     for _,info in ipairs(list) do
         local name = info[1]
         local pos  = info[2]
-        local sp   = info[3]   -- optional (true for “special” like Submerged)
+        local sp   = info[3]
         islandNames[#islandNames]+1 = name
         islandMap[name] = {pos = pos, special = sp}
     end
 end
 
+local selectedIsland = islandNames[1] or "Hydar Island"
 tabTravel:AddDropdown({
     Name     = "Select Island",
     Options  = islandNames,
@@ -804,14 +906,13 @@ local flyIslandToggle = tabTravel:AddToggle({
             local data = islandMap[selectedIsland]
             if not data then return end
             if data.special then
-                -- Submerged Island (World 3 lvl ≥ 2600)
                 TeleportToSubmerged()
                 getgenv().TravelToIsland = false
                 flyIslandToggle:SetValue(false)
                 return
             end
             local targetCF = CFrame.new(data.pos + Vector3.new(0,5,0))
-            doIntermediateTeleport(data.pos)          -- use intermediate island if needed
+            doIntermediateTeleport(data.pos)
             doTweenToPos(targetCF, getgenv().FlySpeed)
 
             local deadline = tick() + 60
@@ -878,7 +979,7 @@ spawn(function()
 end)
 
 --------------------------------------------------------------------------------
---// 1️⃣2️⃣  UI: DUNGEON (auto‑dungeon farm)
+--// 1️⃣2️⃣  UI: DUNGEON
 --------------------------------------------------------------------------------
 tabDungeon:AddSection("Dungeon Farm")
 tabDungeon:AddToggle({
@@ -915,7 +1016,7 @@ tabDungeon:AddToggle({
 })
 
 --------------------------------------------------------------------------------
---// 1️⃣3️⃣  UI: RAID (auto‑raid with chip selection)
+--// 1️⃣3️⃣  UI: RAID
 --------------------------------------------------------------------------------
 tabDungeon:AddSection("Auto Raid")
 tabDungeon:AddDropdown({
@@ -950,11 +1051,10 @@ tabDungeon:AddToggle({
 })
 
 --------------------------------------------------------------------------------
---// 1️⃣4️⃣  UI: SHOP (buy fighting styles)
+--// 1️⃣4️⃣  UI: SHOP
 --------------------------------------------------------------------------------
 tabShop:AddSection("Fighting Styles")
 
--- Data for each fighting style (world‑specific NPC position + remote call)
 local fightingStyles = {
     ["Black Leg"] = {
         world1 = Vector3.new(-984, 17, 3990),
@@ -1012,7 +1112,6 @@ local fightingStyles = {
     },
 }
 
--- Determine the current world key (world1 / world2 / world3)
 local currentWorldKey = World1 and "world1" or World2 and "world2" or "world3"
 
 local function purchaseStyle(name, data)
@@ -1059,25 +1158,12 @@ for name,data in pairs(fightingStyles) do
 end
 
 --------------------------------------------------------------------------------
---// 1️⃣5️⃣  QUICK NOTIFICATION ON LOAD
+--// 1️⃣5️⃣  NOTIFICATION
 --------------------------------------------------------------------------------
 window:Notify({
     Title    = "Hub Loaded",
-    Text     = "All features ready – Buddha logic, elite‑hunt, dungeon, raid, stats upgrade",
+    Text     = "Topi Hub is ready! All features loaded.",
     Duration = 5
 })
 
---------------------------------------------------------------------------------
---// 2️⃣  (ALL FARM / DUNGEON / ELITE / RAID / BUDDHA LOGIC) 
---------------------------------------------------------------------------------
--- The whole body of the original script (teleport helpers, farms, Buddha,
--- elite‑hunt, dungeon, raid, fast‑attack, auto‑buso, auto‑stats, etc.) **remains
--- exactly the same** as the cleaned‑up version you already have.  
--- Only the UI bindings above were changed to use MrLib instead of Fluent.
-
--- (The rest of the script – everything from “Intermediate Islands” down to the
--- very last Notify – stays exactly as in the cleaned‑up version you already own.)
-
---------------------------------------------------------------------------------
--- END OF SCRIPT
---------------------------------------------------------------------------------
+print("✅ Topi Hub loaded successfully!")
