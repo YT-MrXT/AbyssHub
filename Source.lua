@@ -1,9 +1,7 @@
 --------------------------------------------------------------------------------
 --// 1️⃣  LOAD LIBRARIES
 --------------------------------------------------------------------------------
-local MrLib = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/YT-MrXT/lab/refs/heads/main/cat/libary/mrxtlibz"
-))()
+local MrLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/YT-MrXT/lab/refs/heads/main/cat/libary/mrxtlibz"))()
 
 -- Core Roblox services ---------------------------------------------------------
 local Players            = game:GetService("Players")
@@ -872,7 +870,7 @@ do
         local name = info[1]
         local pos  = info[2]
         local sp   = info[3]
-        islandNames[#islandNames]+1 = name
+        islandNames[#islandNames+1] = name
         islandMap[name] = {pos = pos, special = sp}
     end
 end
