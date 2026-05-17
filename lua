@@ -334,20 +334,7 @@ local function AttackEnemy(enemy)
             if getgenv().IsFarming or getgenv().FarmPhaBinh or getgenv().AutoMaterial then
                 selectWeapon()
             end
-            local char = player.Character; if not char then return end
-            local tool = char:FindFirstChildOfClass("Tool")
-            if tool and (tool.ToolTip=="Melee" or tool.ToolTip=="Sword" or tool.ToolTip=="Gun") then
-                for _=1,FastAttackConfig.ATTACKS_PER_FRAME do RegisterAttack:FireServer(0) end
-                local hrp = enemy:FindFirstChild("HumanoidRootPart"); if not hrp then return end
-                local args = {[1]=hrp, [2]={{enemy, hrp}}}
-                for _=1,FastAttackConfig.HITS_PER_FRAME do RegisterHit:FireServer(table.unpack(args)) end
-            elseif tool and tool.ToolTip=="Blox Fruit" then
-                local remote = tool:FindFirstChild("LeftClickRemote"); if not remote then return end
-                local hrp2 = char:FindFirstChild("HumanoidRootPart"); if not hrp2 then return end
-                local ehrp = enemy:FindFirstChild("HumanoidRootPart"); if not ehrp then return end
-                local dir = (ehrp.Position - hrp2.Position).Unit
-                for _=1,FastAttackConfig.FRUIT_SPAM do remote:FireServer(dir, 1) end
-            end
+            ReplicatedStorage.Remotes.Combat:FireServer(enemy)
         end)
     end
 end
@@ -1289,7 +1276,7 @@ RunService.Heartbeat:Connect(function()
     local tool = char:FindFirstChildOfClass("Tool")
     if tool ~= LastTool then FruitArmed=false; LastTool=tool end
     local targets = GetTargets(); if #targets==0 then return end
-    if tool and (tool.ToolTip=="Melee" or tool.ToolTip=="Sword" or tool.ToolTip=="Gun") then
+    if tool and (tool.ToolTip=="Melee" or tool.ToolTip=="Sword") then
         for _=1,FastAttackConfig.ATTACKS_PER_FRAME do RegisterAttack:FireServer(0) end
         local args={[1]=targets[1].HumanoidRootPart,[2]={}}
         for i,v in ipairs(targets) do args[2][i]={v, v.HumanoidRootPart} end
