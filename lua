@@ -1768,13 +1768,24 @@ spawn(function()
             if not hum or hum.Health <= 0 then return end
             local char = player.Character
             if not char then return end
-            -- Use skills of chosen weapon when mob is below 30% HP
-            if hum.Health / hum.MaxHealth <= 0.10 then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+            local pct = hum.Health / hum.MaxHealth
+            -- Stop the FastAttack loop from killing the mob while we use skills
+            if pct <= 0.10 then
+                getgenv().IsFarming = false
+                -- Move close to the NPC (within 5 studs)
+                local mobHRP = mob:FindFirstChild("HumanoidRootPart")
+                if mobHRP then
+                    local targetCF = mobHRP.CFrame * CFrame.new(0, 0, 5)
+                    TweenToPos(targetCF, 300)
+                    task.wait(0.3)
+                end
                 local weapon = getgenv().MasteryWeapon
                 local skills = {"Z", "X"}
                 if weapon == "Melee"      then skills = {"Z", "X", "C"} end
                 if weapon == "Blox Fruit" then skills = {"Z", "X", "C", "V", "F"} end
-                -- Equip the chosen weapon
+                -- Equip the chosen weapon and fire skills
                 for _, item in pairs(player.Backpack:GetChildren()) do
                     if item:IsA("Tool") and item.ToolTip == weapon then
                         item.Parent = char
@@ -1784,13 +1795,13 @@ spawn(function()
                             pcall(sendSkillKey, key)
                             task.wait(0.1)
                         end
-                        -- Return weapon to backpack and re-equip Melee
                         item.Parent = player.Backpack
                         task.wait(0.1)
                         break
                     end
                 end
-                -- Re-equip Melee to continue dealing damage
+                -- Re-enable farming and re-equip Melee
+                getgenv().IsFarming = true
                 _G.ChooseWP = "Melee"
                 for _, item in pairs(player.Backpack:GetChildren()) do
                     if item:IsA("Tool") and item.ToolTip == "Melee" then
